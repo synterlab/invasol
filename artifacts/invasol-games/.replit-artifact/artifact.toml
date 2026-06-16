@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Invasol Games"
+version = "1.0.0"
+id = "artifacts/invasol-games"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21851
+
+[services.development]
+run = "pnpm --filter @workspace/invasol-games run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/invasol-games", "run", "build" ]
+publicDir = "artifacts/invasol-games/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21851"
+BASE_PATH = "/"

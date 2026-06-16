@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm install --frozen-lockfile && pnpm run typecheck:libs && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/invasol-games run build",
+  "outputDirectory": "artifacts/invasol-games/dist",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.mjs" }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Space+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --deep-current: #040e0a;
+  --lagoon: #1E8E63;
+  --shoal: #59D98E;
+  --foam-white: #F4FBF6;
+  --low-tide-sand: #E8D9A6;
+  --coral-warn: #FF6F59;
+  --biolum: #A8F0D0;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--deep-current);
+  color: var(--foam-white);
+  font-family: 'Space Mono', monospace;
+  overscroll-behavior: none;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+canvas {
+  display: block;
+  touch-action: none;
+  user-select: none;
+}
+
+/* Scrollable screens */
+.overflow-y-auto {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Button reset */
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Tailwind base layer overrides */
+@layer base {
+  * {
+    border-color: rgba(30, 142, 99, 0.2);
+  }
+  body {
+    background-color: var(--deep-current);
+    color: var(--foam-white);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(89, 217, 142, 0.3);
+  border-radius: 2px;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes float-up {
+  from { transform: translateY(0); opacity: 0.6; }
+  to { transform: translateY(-30px); opacity: 0; }
+}
