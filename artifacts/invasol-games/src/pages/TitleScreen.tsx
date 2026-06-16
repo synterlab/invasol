@@ -281,6 +281,25 @@ export default function TitleScreen() {
           </span>
         </a>
 
+        {/* EasyA Kickstart badge */}
+        <a
+          href="https://kickstart.easya.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Built at EasyA Kickstart"
+          style={{ opacity: 0.75, transition: "opacity 0.2s" }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "0.75")}
+        >
+          <img
+            src="/kickstart-logo.png"
+            alt="EasyA Kickstart"
+            height="48"
+            style={{ display: "block", height: "48px", width: "auto" }}
+            loading="lazy"
+          />
+        </a>
+
         <p className="text-xs opacity-20 text-center" style={{ color: "#A8F0D0" }}>
           Drag from anywhere · Release to fire · Hold 0.2s to charge
         </p>
