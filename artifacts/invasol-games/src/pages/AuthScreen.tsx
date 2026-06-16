@@ -70,6 +70,26 @@ export default function AuthScreen() {
       }}
     >
       <div className="w-full max-w-xs">
+        {/* EasyA Kickstart badge */}
+        <div className="flex justify-center mb-6">
+          <a
+            href="https://kickstart.easya.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Built at EasyA Kickstart"
+            style={{ opacity: 0.75, transition: "opacity 0.2s" }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+            onMouseLeave={e => (e.currentTarget.style.opacity = "0.75")}
+          >
+            <img
+              src="/kickstart-logo.png"
+              alt="EasyA Kickstart"
+              style={{ display: "block", height: "44px", width: "auto" }}
+              loading="lazy"
+            />
+          </a>
+        </div>
+
         {/* Logo */}
         <div className="text-center mb-8">
           <div
