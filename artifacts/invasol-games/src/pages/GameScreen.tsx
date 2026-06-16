@@ -21,42 +21,33 @@ function RotatePrompt() {
         backdropFilter: "blur(6px)",
       }}
     >
-      {/* Animated phone-rotation icon */}
       <div style={{ animation: "rotate-hint 2s ease-in-out infinite" }}>
         <svg width="72" height="72" viewBox="0 0 72 72" fill="none" aria-hidden="true">
-          {/* Phone outline */}
-          <rect
-            x="20" y="10" width="32" height="52"
-            rx="5" stroke="#59D98E" strokeWidth="2.5" fill="none"
-            style={{ transformOrigin: "36px 36px", animation: "phone-tilt 2s ease-in-out infinite" }}
-          />
+          <rect x="20" y="10" width="32" height="52" rx="5" stroke="#59D98E" strokeWidth="2.5" fill="none" />
           <circle cx="36" cy="55" r="2.5" fill="#59D98E" opacity="0.7" />
-          {/* Rotation arrows */}
-          <path
-            d="M13 36 C13 22 22 13 36 13"
-            stroke="#A8F0D0" strokeWidth="2" fill="none" strokeLinecap="round"
-            strokeDasharray="4 3" opacity="0.6"
-          />
+          <path d="M13 36 C13 22 22 13 36 13" stroke="#A8F0D0" strokeWidth="2" fill="none" strokeLinecap="round" strokeDasharray="4 3" opacity="0.6" />
           <path d="M13 29 L13 36 L20 36" stroke="#A8F0D0" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.6" />
-          <path
-            d="M59 36 C59 50 50 59 36 59"
-            stroke="#A8F0D0" strokeWidth="2" fill="none" strokeLinecap="round"
-            strokeDasharray="4 3" opacity="0.6"
-          />
+          <path d="M59 36 C59 50 50 59 36 59" stroke="#A8F0D0" strokeWidth="2" fill="none" strokeLinecap="round" strokeDasharray="4 3" opacity="0.6" />
           <path d="M59 43 L59 36 L52 36" stroke="#A8F0D0" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.6" />
         </svg>
       </div>
-
       <div className="text-center px-8">
         <p className="font-bold text-sm uppercase tracking-widest mb-2" style={{ color: "#59D98E" }}>
           Rotate Device
         </p>
         <p className="text-xs opacity-50 leading-relaxed" style={{ color: "#A8F0D0" }}>
-          Tidebreak plays best in landscape mode. Please rotate your device horizontally.
+          Tidebreak plays best in landscape. Please rotate your device horizontally.
         </p>
       </div>
     </div>
   );
+}
+
+/** Returns the true visible viewport size, accounting for Android browser chrome */
+function getViewportSize() {
+  const vv = window.visualViewport;
+  if (vv) return { w: vv.width, h: vv.height };
+  return { w: window.innerWidth, h: window.innerHeight };
 }
 
 export default function GameScreen() {
@@ -109,66 +100,70 @@ export default function GameScreen() {
     if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
   }, [pushSave]);
 
-  /* ─── Landscape lock + portrait detection ─── */
+  /* ─── Orientation detection ─── */
   useEffect(() => {
+    const isMobile = navigator.maxTouchPoints > 0 &&
+      /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
     const checkOrientation = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      // Only show rotate prompt on mobile (touch) devices in portrait
-      const isMobile = navigator.maxTouchPoints > 0 && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      const { w, h } = getViewportSize();
       setIsPortrait(isMobile && h > w);
     };
 
+    // orientationchange fires BEFORE dimensions update — wait 250 ms
+    const onOrientationChange = () => setTimeout(checkOrientation, 250);
+
     checkOrientation();
 
-    // Try to lock to landscape on supported browsers (PWA / fullscreen)
     const tryLandscapeLock = async () => {
       try {
-        // @ts-expect-error — screen.orientation.lock is not in all TS libs
-        if (screen.orientation && typeof screen.orientation.lock === "function") {
-          await screen.orientation.lock("landscape");
-        }
-      } catch {
-        // Not supported or not in fullscreen — fall back to soft prompt
-      }
+        // @ts-expect-error — not in all TS libs yet
+        if (screen.orientation?.lock) await screen.orientation.lock("landscape");
+      } catch { /* not supported or not fullscreen */ }
     };
     tryLandscapeLock();
 
     window.addEventListener("resize", checkOrientation);
-    window.addEventListener("orientationchange", checkOrientation);
+    window.addEventListener("orientationchange", onOrientationChange);
+    window.visualViewport?.addEventListener("resize", checkOrientation);
 
     return () => {
       window.removeEventListener("resize", checkOrientation);
-      window.removeEventListener("orientationchange", checkOrientation);
-      // Release orientation lock on exit
+      window.removeEventListener("orientationchange", onOrientationChange);
+      window.visualViewport?.removeEventListener("resize", checkOrientation);
       try {
         // @ts-expect-error
-        if (screen.orientation && typeof screen.orientation.unlock === "function") {
-          screen.orientation.unlock();
-        }
+        screen.orientation?.unlock?.();
       } catch { /* ignore */ }
     };
   }, []);
 
-  /* ─── Canvas resize ─── */
+  /* ─── Canvas + Game lifecycle ─── */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      // Use visualViewport for accurate size on Android Chrome (avoids address-bar gap)
+      const { w, h } = getViewportSize();
+      canvas.width = w;
+      canvas.height = h;
       if (gameRef.current) {
-        gameRef.current.turret.x = canvas.width / 2;
-        gameRef.current.turret.y = canvas.height * 0.9;
-        gameRef.current.tideline.baseY = canvas.height * 0.82;
+        gameRef.current.turret.x = w / 2;
+        gameRef.current.turret.y = h * 0.9;
+        gameRef.current.tideline.baseY = h * 0.82;
         if (!gameRef.current.tideline.hasBreach) {
-          gameRef.current.tideline.y = canvas.height * 0.82;
+          gameRef.current.tideline.y = h * 0.82;
         }
       }
     };
 
+    // orientationchange: wait for browser to finish updating layout (250 ms)
+    const onOrientationChange = () => setTimeout(resize, 250);
+
     window.addEventListener("resize", resize);
+    window.addEventListener("orientationchange", onOrientationChange);
+    window.visualViewport?.addEventListener("resize", resize);
     resize();
 
     const savedUpgrades = saveData?.upgradesJson
@@ -187,18 +182,16 @@ export default function GameScreen() {
     rafId = requestAnimationFrame(loop);
 
     saveIntervalRef.current = setInterval(() => {
-      if (game && !game.isGameOver) {
-        pushSave(game.score, game.pearls, game.wave);
-      }
+      if (game && !game.isGameOver) pushSave(game.score, game.pearls, game.wave);
     }, 15000);
 
-    const handleVisibility = () => {
-      if (game) game.paused = document.hidden;
-    };
+    const handleVisibility = () => { if (game) game.paused = document.hidden; };
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
       window.removeEventListener("resize", resize);
+      window.removeEventListener("orientationchange", onOrientationChange);
+      window.visualViewport?.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", handleVisibility);
       cancelAnimationFrame(rafId);
       if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
@@ -207,24 +200,42 @@ export default function GameScreen() {
   }, [handleGameOver, saveData]);
 
   return (
+    /*
+     * position: fixed; inset: 0 is more reliable than h-[100dvh] on Android Chrome.
+     * dvh can lag a frame behind during orientation change, causing a clipped edge.
+     */
     <div
-      className="relative w-full h-[100dvh] overflow-hidden"
-      style={{ background: "#040e0a", touchAction: "none" }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "#040e0a",
+        touchAction: "none",
+        overflow: "hidden",
+      }}
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full block"
-        style={{ touchAction: "none" }}
+        style={{
+          display: "block",
+          width: "100%",
+          height: "100%",
+          touchAction: "none",
+        }}
         data-testid="canvas-game"
       />
 
       {/* Top HUD fade */}
       <div
-        className="absolute top-0 left-0 right-0 h-16 pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, rgba(4,14,10,0.7), transparent)" }}
+        style={{
+          position: "absolute",
+          top: 0, left: 0, right: 0,
+          height: 64,
+          pointerEvents: "none",
+          background: "linear-gradient(to bottom, rgba(4,14,10,0.7), transparent)",
+        }}
       />
 
-      {/* Portrait rotate prompt — shown on mobile portrait only */}
+      {/* Portrait rotate prompt */}
       {isPortrait && <RotatePrompt />}
 
       {/* Game over overlay */}
@@ -250,10 +261,7 @@ export default function GameScreen() {
           <div className="text-sm mb-1 opacity-70" style={{ color: "#E8D9A6" }}>
             Wave {finalWave} Reached
           </div>
-          <div
-            className="text-3xl font-bold mb-2"
-            style={{ color: "#59D98E" }}
-          >
+          <div className="text-3xl font-bold mb-2" style={{ color: "#59D98E" }}>
             {finalScore.toLocaleString()}
           </div>
           <div className="text-sm mb-8 opacity-60" style={{ color: "#A8F0D0" }}>
