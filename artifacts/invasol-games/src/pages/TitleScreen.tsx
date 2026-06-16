@@ -281,26 +281,6 @@ export default function TitleScreen() {
           </span>
         </a>
 
-        {/* Orynth badge */}
-        <a
-          href="https://orynth.dev/projects/invasol"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Featured on Orynth"
-          style={{ opacity: 0.85, transition: "opacity 0.2s" }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "0.85")}
-        >
-          <img
-            src="https://orynth.dev/api/badge/invasol?theme=dark&style=default"
-            alt="Featured on Orynth"
-            width="200"
-            height="62"
-            style={{ display: "block" }}
-            loading="lazy"
-          />
-        </a>
-
         <p className="text-xs opacity-20 text-center" style={{ color: "#A8F0D0" }}>
           Drag from anywhere · Release to fire · Hold 0.2s to charge
         </p>
