@@ -15,22 +15,27 @@
     "@workspace/db": "workspace:*",
     "bcryptjs": "^3.0.2",
     "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.6",
     "drizzle-orm": "catalog:",
-    "express": "catalog:",
+    "express": "^5.2.1",
     "express-session": "^1.18.1",
     "pg": "^8.14.1",
-    "pino": "catalog:",
-    "pino-http": "catalog:",
+    "pino": "^9.14.0",
+    "pino-http": "^10.5.0",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/connect-pg-simple": "^7.0.3",
-    "@types/express": "catalog:",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/express-session": "^1.18.1",
     "@types/node": "catalog:",
     "@types/pg": "^8.11.11",
-    "esbuild": "catalog:",
-    "typescript": "catalog:"
+    "esbuild": "0.27.3",
+    "esbuild-plugin-pino": "^2.3.3",
+    "pino-pretty": "^13.1.3",
+    "thread-stream": "3.1.0",
+    "typescript": "~5.9.3"
   }
 }
