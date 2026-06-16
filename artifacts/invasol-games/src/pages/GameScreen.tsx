@@ -11,6 +11,54 @@ import {
   getGetMeQueryKey,
 } from "@workspace/api-client-react";
 
+function RotatePrompt() {
+  return (
+    <div
+      className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-6"
+      style={{
+        background: "rgba(4,14,10,0.97)",
+        fontFamily: "'Space Mono', monospace",
+        backdropFilter: "blur(6px)",
+      }}
+    >
+      {/* Animated phone-rotation icon */}
+      <div style={{ animation: "rotate-hint 2s ease-in-out infinite" }}>
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" aria-hidden="true">
+          {/* Phone outline */}
+          <rect
+            x="20" y="10" width="32" height="52"
+            rx="5" stroke="#59D98E" strokeWidth="2.5" fill="none"
+            style={{ transformOrigin: "36px 36px", animation: "phone-tilt 2s ease-in-out infinite" }}
+          />
+          <circle cx="36" cy="55" r="2.5" fill="#59D98E" opacity="0.7" />
+          {/* Rotation arrows */}
+          <path
+            d="M13 36 C13 22 22 13 36 13"
+            stroke="#A8F0D0" strokeWidth="2" fill="none" strokeLinecap="round"
+            strokeDasharray="4 3" opacity="0.6"
+          />
+          <path d="M13 29 L13 36 L20 36" stroke="#A8F0D0" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.6" />
+          <path
+            d="M59 36 C59 50 50 59 36 59"
+            stroke="#A8F0D0" strokeWidth="2" fill="none" strokeLinecap="round"
+            strokeDasharray="4 3" opacity="0.6"
+          />
+          <path d="M59 43 L59 36 L52 36" stroke="#A8F0D0" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.6" />
+        </svg>
+      </div>
+
+      <div className="text-center px-8">
+        <p className="font-bold text-sm uppercase tracking-widest mb-2" style={{ color: "#59D98E" }}>
+          Rotate Device
+        </p>
+        <p className="text-xs opacity-50 leading-relaxed" style={{ color: "#A8F0D0" }}>
+          Tidebreak plays best in landscape mode. Please rotate your device horizontally.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function GameScreen() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [, setLocation] = useLocation();
@@ -20,6 +68,7 @@ export default function GameScreen() {
   const [finalScore, setFinalScore] = useState(0);
   const [finalWave, setFinalWave] = useState(1);
   const [finalPearls, setFinalPearls] = useState(0);
+  const [isPortrait, setIsPortrait] = useState(false);
   const gameRef = useRef<Game | null>(null);
   const saveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -60,6 +109,48 @@ export default function GameScreen() {
     if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
   }, [pushSave]);
 
+  /* ─── Landscape lock + portrait detection ─── */
+  useEffect(() => {
+    const checkOrientation = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      // Only show rotate prompt on mobile (touch) devices in portrait
+      const isMobile = navigator.maxTouchPoints > 0 && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      setIsPortrait(isMobile && h > w);
+    };
+
+    checkOrientation();
+
+    // Try to lock to landscape on supported browsers (PWA / fullscreen)
+    const tryLandscapeLock = async () => {
+      try {
+        // @ts-expect-error — screen.orientation.lock is not in all TS libs
+        if (screen.orientation && typeof screen.orientation.lock === "function") {
+          await screen.orientation.lock("landscape");
+        }
+      } catch {
+        // Not supported or not in fullscreen — fall back to soft prompt
+      }
+    };
+    tryLandscapeLock();
+
+    window.addEventListener("resize", checkOrientation);
+    window.addEventListener("orientationchange", checkOrientation);
+
+    return () => {
+      window.removeEventListener("resize", checkOrientation);
+      window.removeEventListener("orientationchange", checkOrientation);
+      // Release orientation lock on exit
+      try {
+        // @ts-expect-error
+        if (screen.orientation && typeof screen.orientation.unlock === "function") {
+          screen.orientation.unlock();
+        }
+      } catch { /* ignore */ }
+    };
+  }, []);
+
+  /* ─── Canvas resize ─── */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -127,11 +218,14 @@ export default function GameScreen() {
         data-testid="canvas-game"
       />
 
-      {/* Top HUD fade overlay */}
+      {/* Top HUD fade */}
       <div
         className="absolute top-0 left-0 right-0 h-16 pointer-events-none"
         style={{ background: "linear-gradient(to bottom, rgba(4,14,10,0.7), transparent)" }}
       />
+
+      {/* Portrait rotate prompt — shown on mobile portrait only */}
+      {isPortrait && <RotatePrompt />}
 
       {/* Game over overlay */}
       {gameOver && (

@@ -57,17 +57,14 @@ function LogoCanvas() {
       waveT += 0.04;
       const progress = Math.min(frame / 80, 1);
       const ep = easeOutBack(Math.min(progress, 0.95));
-
       if (progress >= 1) phase = "idle";
 
-      // Ocean wave bg
       const seaGrad = ctx.createLinearGradient(0, 0, 0, H);
       seaGrad.addColorStop(0, "rgba(4,14,10,0)");
       seaGrad.addColorStop(1, "rgba(11,61,46,0.3)");
       ctx.fillStyle = seaGrad;
       ctx.fillRect(0, 0, W, H);
 
-      // Droplets
       for (const d of droplets) {
         const cx = d.x + (d.tx - d.x) * ep;
         const cy = d.y + (d.ty - d.y) * ep;
@@ -82,8 +79,6 @@ function LogoCanvas() {
       }
 
       ctx.globalAlpha = ep;
-
-      // Title glow
       ctx.shadowColor = "#59D98E";
       ctx.shadowBlur = 24 * ep;
       ctx.fillStyle = "#59D98E";
@@ -92,7 +87,6 @@ function LogoCanvas() {
       ctx.textBaseline = "middle";
       ctx.fillText("TIDEBREAK", W / 2, H * 0.4);
 
-      // Subtitle
       ctx.shadowBlur = 0;
       ctx.globalAlpha = ep * 0.65;
       ctx.fillStyle = "#E8D9A6";
@@ -100,7 +94,6 @@ function LogoCanvas() {
       ctx.letterSpacing = "0.1em";
       ctx.fillText("INVASOL GAMES", W / 2, H * 0.72);
       ctx.letterSpacing = "0";
-
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
 
@@ -267,9 +260,51 @@ export default function TitleScreen() {
         </div>
       )}
 
-      <p className="mt-8 text-xs opacity-20" style={{ color: "#A8F0D0" }}>
-        Drag from anywhere · Release to fire · Hold 0.2s to charge
-      </p>
+      {/* Footer: social + badge */}
+      <div className="w-full max-w-sm flex flex-col items-center gap-5 mt-10">
+        {/* X (Twitter) */}
+        <a
+          href="https://x.com/Invasolgames"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 transition-opacity"
+          style={{ color: "#A8F0D0", textDecoration: "none", opacity: 0.5 }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "0.9")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}
+          aria-label="Follow @Invasolgames on X"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.258 5.63 5.906-5.63Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
+          <span className="text-xs font-bold tracking-wide" style={{ fontFamily: "'Space Mono', monospace" }}>
+            @Invasolgames
+          </span>
+        </a>
+
+        {/* Orynth badge */}
+        <a
+          href="https://orynth.dev/projects/invasol"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Featured on Orynth"
+          style={{ opacity: 0.85, transition: "opacity 0.2s" }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "0.85")}
+        >
+          <img
+            src="https://orynth.dev/api/badge/invasol?theme=dark&style=default"
+            alt="Featured on Orynth"
+            width="200"
+            height="62"
+            style={{ display: "block" }}
+            loading="lazy"
+          />
+        </a>
+
+        <p className="text-xs opacity-20 text-center" style={{ color: "#A8F0D0" }}>
+          Drag from anywhere · Release to fire · Hold 0.2s to charge
+        </p>
+      </div>
     </div>
   );
 }
